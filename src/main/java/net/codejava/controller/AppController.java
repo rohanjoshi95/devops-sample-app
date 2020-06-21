@@ -39,8 +39,6 @@ public class AppController {
 	@RequestMapping(value = "/save", method = RequestMethod.POST)
 	public String saveProduct(@ModelAttribute("product") Product product) {
 		service.save(product);
-		;
-
 		return "redirect:/";
 	}
 
