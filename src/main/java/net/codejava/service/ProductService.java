@@ -26,7 +26,9 @@ public class ProductService {
 	}
 	
 	public Product get(long id) {
-		return repo.findById(id).get();
+		Optional<Product> productList= repo.findById(id);
+		Product product = productList.get();
+		return product;
 	}
 	
 	public void delete(long id) {
