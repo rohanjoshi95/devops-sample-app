@@ -26,8 +26,11 @@ public class ProductService {
 	}
 	
 	public Product get(long id) {
+		Product product = new Product();
 		Optional<Product> productList= repo.findById(id);
-		Product product = productList.get();
+		if (productList.isPresent()) {
+			product = productList.get();
+		}
 		return product;
 	}
 	
