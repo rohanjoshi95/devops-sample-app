@@ -1,3 +1,3 @@
 # Java Project
 
-Product Management
+Product Management Service
