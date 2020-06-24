@@ -17,6 +17,8 @@
 		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
 		<sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
 		<sonar.coverage.exclusions>target/**</sonar.coverage.exclusions>
+		<!-- <sonar.login>rohanjoshi95</sonar.login>
+		<sonar.password>Rohan@95</sonar.password> -->
 	</properties>
 
 	<parent>

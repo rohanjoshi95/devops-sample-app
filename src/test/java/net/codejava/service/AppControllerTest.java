@@ -37,7 +37,8 @@ public class AppControllerTest {
 		List<Product> productList = new ArrayList<Product>();
 		productList.add(product);
 		when(model.addAllAttributes(productList)).thenReturn(model);
-		assertEquals("index", appController.viewHomePage(model));
+		String name = "index";
+		assertEquals(name, appController.viewHomePage(model));
 	}
 
 	@Test
