@@ -44,7 +44,7 @@ node {
     stage('Terraform Apply'){
         bat '''
         cd C:/Users/rjoshi4/Documents/Jenkins_Workspace/workspace/JenkinsDemo/kubernetes_infra
-        C:/softwares/TERRAFORM/terraform_0.12.26_windows_amd64/terraform apply -auto-approve
+        C:/softwares/TERRAFORM/terraform_0.12.26_windows_amd64/terraform destroy -auto-approve
         '''
     }
     
