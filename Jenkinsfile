@@ -20,7 +20,7 @@ node {
     stage("Quality Gate"){
         def qualityGate = waitForQualityGate()
             if (qualityGate.status != 'OK') {
-                error "Build Job aborted because of quality gate failure: ${lityGate.status}"
+                error "Build Job aborted because of quality gate failure: ${qualityGate.status}"
             }
     }
     stage("Build Docker Image"){
