@@ -1,4 +1,4 @@
-- hosts: master,localhost
+- hosts: master
   become: yes
   tasks:
    - name: install APT Transport HTTPS
