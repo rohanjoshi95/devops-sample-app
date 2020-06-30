@@ -18,7 +18,7 @@ resource "aws_instance" "my-test-instance" {
   tags                   = local.common_tags
 
   provisioner "local-exec" {
-    command = "echo ${aws_instance.my-test-instance.public_ip} >> /home/ubuntu/cube-cluster/hosts"
+    command = "echo ${aws_instance.my-test-instance.public_ip} >> ./hosts"
   }
 }
 # security group
@@ -99,7 +99,7 @@ resource "aws_route_table_association" "main-public-1-a" {
   route_table_id = aws_route_table.main-public.id
   
   provisioner "local-exec" {
-    command = "sleep 120; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu --private-key ./Mumbai.pem -i /home/ubuntu/cube-cluster/hosts /home/ubuntu/cube-cluster/dependencies.yml"
+    command = "sleep 120; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu --private-key ./Mumbai.pem -i ./hosts ./dependencies.yml"
   }
 
 }
