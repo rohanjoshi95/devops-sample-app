@@ -1,0 +1,129 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  annotations:
+    name: jenkinsdemo
+  name: jenkinsdemo
+  labels:
+    name: jenkinsdemo
+
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: mysql-root-pass
+  namespace: jenkinsdemo
+data:
+  password: "P4ssw0rd"
+
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: mysql-user-pass
+  namespace: jenkinsdemo
+data:
+  password: "P4ssw0rd"
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysqlhost
+  namespace: jenkinsdemo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysqlhost
+  template:
+    metadata:
+      labels:
+        app: mysqlhost
+    spec:
+      containers:
+        - name: mysqlhost
+          image: mysql:5.6
+          env:
+            - name: "MYSQL_ROOT_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-user-pass
+                  key: password
+            - name: "MYSQL_DATABASE"
+              value: "sales"
+            - name: "MYSQL_USER"
+              value: "rohan"
+            - name: "MYSQL_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-user-pass
+                  key: password
+          ports:
+            - containerPort: 3306
+              protocol: TCP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myproduct
+  namespace: jenkinsdemo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myproduct
+  template:
+    metadata:
+      labels:
+        app: myproduct
+    spec:
+      containers:
+        - name: myproduct
+          image: rohanjoshi95/product:latest
+          env:
+            - name: "SPRING_DATASOURCE_USERNAME"
+              value: "rohan"
+            - name: "SPRING_DATASOURCE_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-user-pass
+                  key: password
+            - name: "SPRING_DATASOURCE_URL"
+              value: "jdbc:mysql://mysqlhost:3306/sales"
+          ports:
+            - containerPort: 8081
+              protocol: TCP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: mysqlhost
+  name: mysqlhost
+  namespace: jenkinsdemo
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: mysqlhost
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: myproduct
+  namespace: jenkinsdemo
+spec:
+  type: NodePort
+  ports:
+  - port: 8081
+    targetPort: 8081
+    nodePort: 30080
+    protocol: TCP
+  selector:
+    app: myproduct
