@@ -18,8 +18,35 @@ resource "aws_instance" "my-test-instance" {
   tags                   = local.common_tags
 
   provisioner "local-exec" {
+    command = "echo [master] >> ./hosts"
+  }
+  provisioner "local-exec" {
     command = "echo ${aws_instance.my-test-instance.public_ip} >> ./hosts"
   }
+
+
+}
+# instance
+resource "aws_instance" "my-test-instance2" {
+  ami                    = lookup(var.amis, var.aws_region[1])
+  instance_type          = var.instance_type[0]
+  subnet_id              = aws_subnet.main-public-1.id
+  vpc_security_group_ids = [aws_security_group.allow-ssh.id]
+  key_name               = "Mumbai"
+  tags = {
+    Name = "Worker"
+    user = "Rohan"
+    env  = "DEV"
+  }
+
+  provisioner "local-exec" {
+    command = "echo [worker] >> ./hosts"
+  }
+  provisioner "local-exec" {
+    command = "echo ${aws_instance.my-test-instance2.public_ip} >> ./hosts"
+  }
+
+
 }
 # security group
 resource "aws_security_group" "allow-ssh" {
@@ -90,6 +117,11 @@ resource "aws_route_table" "main-public" {
     cidr_block = "${aws_instance.my-test-instance.public_ip}/0"
     gateway_id = aws_internet_gateway.main-gw.id
   }
+  route {
+    cidr_block = "${aws_instance.my-test-instance2.public_ip}/0"
+    gateway_id = aws_internet_gateway.main-gw.id
+  }
+
   tags = local.common_tags
 }
 
@@ -97,9 +129,9 @@ resource "aws_route_table" "main-public" {
 resource "aws_route_table_association" "main-public-1-a" {
   subnet_id      = aws_subnet.main-public-1.id
   route_table_id = aws_route_table.main-public.id
-  
+
   provisioner "local-exec" {
-    command = "sleep 120; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu --private-key ./Mumbai.pem -i ./hosts ./dependencies.yml"
+    command = "sleep 120; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu --private-key ./Mumbai.pem -i ./hosts /dependencies.yml"
   }
 
 }
