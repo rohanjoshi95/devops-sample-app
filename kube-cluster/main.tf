@@ -131,7 +131,7 @@ resource "aws_route_table_association" "main-public-1-a" {
   route_table_id = aws_route_table.main-public.id
 
   provisioner "local-exec" {
-    command = "sleep 120; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu --private-key ./Mumbai.pem -i ./hosts /dependencies.yml"
+    command = "sleep 120; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu --private-key ./Mumbai.pem -i ./hosts ./dependencies.yml"
   }
 
 }
