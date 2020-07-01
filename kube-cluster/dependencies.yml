@@ -105,13 +105,7 @@
        chdir: $HOME
        creates: pod_network_setup.txt
 
-   - name: terraform binary downloading
-     unarchive:
-       src: https://releases.hashicorp.com/terraform/0.12.28/terraform_0.12.28_linux_amd64.zip
-       dest: /usr/local/bin
-       remote_src: yes
-
-   - name: Copying 
+   - name: Copying application kubernetes deployment yml file
      copy: src=app_main.yml dest=app_main.yml
 
    - name: Deploy Application
