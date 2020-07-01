@@ -1,22 +1,22 @@
-- hosts: master
+- hosts: master,worker
   become: yes
   tasks:
    - name: install APT Transport HTTPS
      apt:
        name: apt-transport-https
        state: present
-   
+
    - name: install Docker
      apt:
        name: docker.io
        state: present
        update_cache: true
-   
+
    - name: Add ubuntu user and Restart docker
      shell: |
         usermod -aG docker ubuntu
         systemctl restart docker
-        systemctl enable docker.service  
+        systemctl enable docker.service
 
    - name: add Kubernetes apt-key
      apt_key:
@@ -49,20 +49,20 @@
      apt:
        name: kubernetes-cni
        state: present
-   
+
    - name: Turn Off Swap Space
      shell: |
         swapoff -a
         sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
-     
+
    - name: Enable and start kubelet service
      shell: |
         systemctl daemon-reload
         systemctl start kubelet
-        systemctl enable kubelet.service 
-   
+        systemctl enable kubelet.service
+
    - name: install unzip
-     apt: 
+     apt:
        pkg: unzip
        state: present
 
@@ -111,3 +111,42 @@
        dest: /usr/local/bin
        remote_src: yes
 
+   - name: Copying token to worker nodes
+     copy: src=app_main.yml dest=app_main.yml
+
+   - name: Deploy Application
+     become_user: ubuntu
+     shell: kubectl apply -f app_main.yml
+     register: deployed
+
+   - name: Result of Deployment
+     debug:
+       msg: "Result----->> {{ deployed }}"
+
+- hosts: worker
+  become: yes
+  gather_facts: false
+  tasks:
+   - name: Copying token to worker nodes
+     copy: src=join_token dest=join_token
+
+   - name: Joining worker nodes with kubernetes master
+     shell: |
+       kubeadm reset -f
+       cat join_token | tail -2 > out.sh
+       sh out.sh
+
+   - name: create .kube directory
+     become: yes
+     become_user: ubuntu
+     file:
+       path: $HOME/.kube
+       state: directory
+       mode: 0755
+
+   - name: copy kubelet.conf to user's kube config
+     copy:
+       src: /etc/kubernetes/kubelet.conf
+       dest: /home/ubuntu/.kube/config
+       remote_src: yes
+       owner: ubuntu
