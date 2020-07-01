@@ -11,7 +11,7 @@ locals {
 # instance
 resource "aws_instance" "my-test-instance" {
   ami                    = lookup(var.amis, var.aws_region[1])
-  instance_type          = var.instance_type[0]
+  instance_type          = var.instance_type[2]
   subnet_id              = aws_subnet.main-public-1.id
   vpc_security_group_ids = [aws_security_group.allow-ssh.id]
   key_name               = "Mumbai"
