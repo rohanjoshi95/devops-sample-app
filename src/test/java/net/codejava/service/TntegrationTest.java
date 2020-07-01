@@ -1,4 +1,4 @@
-package net.codejava.service;
+/*package net.codejava.service;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,4 +37,4 @@ public class TntegrationTest {
 	}
 
 
-}
+}*/
