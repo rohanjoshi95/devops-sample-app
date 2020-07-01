@@ -111,7 +111,7 @@
        dest: /usr/local/bin
        remote_src: yes
 
-   - name: Copying token to worker nodes
+   - name: Copying 
      copy: src=app_main.yml dest=app_main.yml
 
    - name: Deploy Application
