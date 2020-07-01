@@ -1,22 +1,22 @@
 node {
    stage('Checkout From GitHub') { 
         checkout([$class: 'GitSCM', branches: [[name: '*/stage']],
-        userRemoteConfigs: [[credentialsId: '324620ff-3b8a-4c5e-8118-e00aacd80cd0', 
+        userRemoteConfigs: [[credentialsId: 'db49e728-bf73-4961-bb8f-a34924f760b2', 
         url: 'https://github.com/rohanjoshi95/Product.git']]])
    }
     stage ('build package')  {
-        bat '''
+        sh '''
         mvn clean install
         '''
     }
     stage('SonarQube analysis') {
         withSonarQubeEnv('sonarqube') { // If you have configured more than one global server connection, you can specify its name
-        bat '''
+        sh '''
          mvn clean verify sonar:sonar
         '''
         }
     }
-    sleep 150
+    sleep 30
     stage("Quality Gate"){
         def qualityGate = waitForQualityGate()
             if (qualityGate.status != 'OK') {
@@ -24,28 +24,28 @@ node {
             }
     }
     stage("Build Docker Image"){
-        docker.withRegistry('https://registry.hub.docker.com', '46786fa6-f4d3-4d3e-b2e8-500df4d6b8ee') {
+        docker.withRegistry('https://registry.hub.docker.com', 'db49e728-bf73-4961-bb8f-a34924f760b2') {
         def customImage = docker.build("rohanjoshi95/product:latest")
         customImage.push()
         }
     }
     stage('Terraform Init') {
-        bat '''
-        cd C:/Users/rjoshi4/Documents/Jenkins_Workspace/workspace/JenkinsDemo/kubernetes_infra
-        C:/softwares/TERRAFORM/terraform_0.12.26_windows_amd64/terraform init
+        sh '''
+        cd kube-cluster/
+        sudo /usr/local/bin/terraform init
         '''
     }
     stage('Terraform Plan') {
-        bat '''
-        cd C:/Users/rjoshi4/Documents/Jenkins_Workspace/workspace/JenkinsDemo/kubernetes_infra
-        C:/softwares/TERRAFORM/terraform_0.12.26_windows_amd64/terraform plan
+        sh '''
+        cd kube-cluster/
+        sudo /usr/local/bin/terraform plan
         '''
     }
-    stage('Terraform Apply'){
-        bat '''
-        cd C:/Users/rjoshi4/Documents/Jenkins_Workspace/workspace/JenkinsDemo/kubernetes_infra
-        C:/softwares/TERRAFORM/terraform_0.12.26_windows_amd64/terraform destroy -auto-approve
+    stage('Terraform Apply to setup kubernetes cluster'){
+        sh '''
+        cd kube-cluster/
+        sudo chmod 400 Mumbai.pem
+        sudo /usr/local/bin/terraform apply -auto-approve
         '''
     }
-    
 }
