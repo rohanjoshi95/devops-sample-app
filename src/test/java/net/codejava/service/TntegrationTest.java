@@ -1,4 +1,4 @@
-/*package net.codejava.service;
+package net.codejava.service;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,10 +25,10 @@ public class TntegrationTest {
 
 	@Test
 	public void viewHomePageIntegrationTest() {
-		System.setProperty("webdriver.chrome.driver","C:\\BACKUP\\chromedriver_win32\\chromedriver.exe");
+		System.setProperty("webdriver.chrome.driver","/usr/bin/chromedriver");
 		WebDriver driver = new ChromeDriver();
 		driver.get("http://localhost:8081");
 	}
 
 
-}*/
+}
