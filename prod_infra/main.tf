@@ -18,10 +18,10 @@ resource "aws_instance" "my-test-instance" {
   tags                   = local.common_tags
 
   provisioner "local-exec" {
-    command = "echo [master] >> ./hosts"
+    command = "echo [master] >> ./stage_hosts"
   }
   provisioner "local-exec" {
-    command = "echo ${aws_instance.my-test-instance.public_ip} >> ./hosts"
+    command = "echo ${aws_instance.my-test-instance.public_ip} >> ./stage_hosts"
   }
 
 
@@ -36,14 +36,14 @@ resource "aws_instance" "my-test-instance2" {
   tags = {
     Name = "Worker"
     user = "Rohan"
-    env  = "DEV"
+    env  = "Prod"
   }
 
   provisioner "local-exec" {
-    command = "echo [worker] >> ./hosts"
+    command = "echo [worker] >> ./stage_hosts"
   }
   provisioner "local-exec" {
-    command = "echo ${aws_instance.my-test-instance2.public_ip} >> ./hosts"
+    command = "echo ${aws_instance.my-test-instance2.public_ip} >> ./stage_hosts"
   }
 
 
