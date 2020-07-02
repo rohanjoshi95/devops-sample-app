@@ -1,51 +1,56 @@
 node {
-   stage('Checkout From GitHub') { 
-        checkout([$class: 'GitSCM', branches: [[name: '*/stage']],
-        userRemoteConfigs: [[credentialsId: 'db49e728-bf73-4961-bb8f-a34924f760b2', 
-        url: 'https://github.com/rohanjoshi95/Product.git']]])
-   }
-    stage ('build package')  {
-        sh '''
-        mvn clean install
-        '''
-    }
-    stage('SonarQube analysis') {
-        withSonarQubeEnv('sonarqube') { // If you have configured more than one global server connection, you can specify its name
-        sh '''
-         mvn clean verify sonar:sonar
-        '''
+    withEnv(['terraform=/usr/local/bin/terraform']){
+       stage('SCM Checkout') { 
+            checkout([$class: 'GitSCM', branches: [[name: '*/stage']],
+            userRemoteConfigs: [[credentialsId: 'db49e728-bf73-4961-bb8f-a34924f760b2', 
+            url: 'https://github.com/rohanjoshi95/Product.git']]])
+       }
+        stage ('build package')  {
+            sh '''
+            mvn clean install
+            '''
+            build job: 'sonarqube', wait: false
         }
-    }
-    sleep 30
-    stage("Quality Gate"){
-        def qualityGate = waitForQualityGate()
-            if (qualityGate.status != 'OK') {
-                error "Build Job aborted because of quality gate failure: ${qualityGate.status}"
+        stage("Build Docker Image"){
+            docker.withRegistry('https://registry.hub.docker.com', 'db49e728-bf73-4961-bb8f-a34924f760b2') {
+            def customImage = docker.build("rohanjoshi95/product:latest")
+            customImage.push()
             }
-    }
-    stage("Build Docker Image"){
-        docker.withRegistry('https://registry.hub.docker.com', 'db49e728-bf73-4961-bb8f-a34924f760b2') {
-        def customImage = docker.build("rohanjoshi95/product:latest")
-        customImage.push()
         }
-    }
-    stage('Terraform Init') {
-        sh '''
-        cd kube-cluster/
-        sudo /usr/local/bin/terraform init
-        '''
-    }
-    stage('Terraform Plan') {
-        sh '''
-        cd kube-cluster/
-        sudo /usr/local/bin/terraform plan
-        '''
-    }
-    stage('Terraform Apply to setup kubernetes cluster'){
-        sh '''
-        cd kube-cluster/
-        sudo chmod 400 Mumbai.pem
-        sudo /usr/local/bin/terraform apply -auto-approve
-        '''
+        stage('Spin up Infrastructure for Staging Environment') {
+            sh '''
+            cd kube-cluster/
+            sudo ${terraform} init
+            sudo ${terraform} plan
+            sudo ${terraform} apply -auto-approve
+            '''
+        }
+        stage('Spin up Infrastructure for Prod Environment') {
+            sh '''
+            cd /var/lib/jenkins/workspace/Product/prod_infra/
+            sudo ${terraform} init
+            sudo ${terraform} plan
+            sudo ${terraform} apply -auto-approve
+            '''
+        }
+        stage('Deployment on Staging Environment'){
+            sh '''
+            cd /var/lib/jenkins/workspace/Product/kube-cluster/
+            sudo chmod 400 Mumbai.pem
+            sleep 60; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu --private-key ./Mumbai.pem -i ./stage_hosts ./deployment.yml
+            '''
+        }
+        stage ('Approval For Production Deployment')  {
+            echo "Taking approval from Prod Manager"     
+            timeout(time: 10, unit: 'DAYS') {
+            input message: 'Deploy into Production after UAT', submitter: 'rohanjoshi95'
+            }
+         }
+          stage('Deployment on Production Environment'){
+            sh '''
+            cd /var/lib/jenkins/workspace/Product/prod_infra/
+            sleep 60; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu --private-key /var/lib/jenkins/workspace/Product/kube-cluster/Mumbai.pem -i ./prod_hosts ./deployment.yml
+            '''
+        }
     }
 }
