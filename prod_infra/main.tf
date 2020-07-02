@@ -129,6 +129,9 @@ resource "aws_route_table" "main-public" {
 resource "aws_route_table_association" "main-public-1-a" {
   subnet_id      = aws_subnet.main-public-1.id
   route_table_id = aws_route_table.main-public.id
+   provisioner "local-exec" {
+    command = "sleep 120; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu --private-key /var/lib/jenkins/workspace/Product/kube-cluster/Mumbai.pem -i ./prod_hosts ./dependencies.yml"
+  }
 }
 
 terraform {
