@@ -70,10 +70,6 @@
   become: yes
   gather_facts: false
   tasks:
-   - name: Resetting kubeadm
-     shell: kubeadm reset -f
-     register: output
-
    - name: Initializing Kubernetes cluster
      shell: kubeadm init --ignore-preflight-errors=NumCPU
      register: output
@@ -114,7 +110,6 @@
 
    - name: Joining worker nodes with kubernetes master
      shell: |
-       kubeadm reset -f
        cat join_token | tail -2 > out.sh
        sh out.sh
 
