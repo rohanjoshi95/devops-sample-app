@@ -25,14 +25,14 @@ node {
             sudo ${terraform} apply -auto-approve
             '''
         }
-        /*stage('Spin up Infrastructure for Prod Environment') {
+        stage('Spin up Infrastructure for Prod Environment') {
             sh '''
             cd /var/lib/jenkins/workspace/Product/prod_infra/
             sudo ${terraform} init
             sudo ${terraform} plan
             sudo ${terraform} apply -auto-approve
             '''
-        }*/
+        }
         stage('Deployment on Staging Environment'){
             sh '''
             cd /var/lib/jenkins/workspace/Product/kube-cluster/
