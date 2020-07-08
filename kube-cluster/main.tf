@@ -16,15 +16,6 @@ resource "aws_instance" "my-test-instance" {
   vpc_security_group_ids = [aws_security_group.allow-ssh.id]
   key_name               = "Mumbai"
   tags                   = local.common_tags
-
-  provisioner "local-exec" {
-    command = "echo [master] >> ./stage_hosts"
-  }
-  provisioner "local-exec" {
-    command = "echo ${aws_instance.my-test-instance.public_ip} >> ./stage_hosts"
-  }
-
-
 }
 # instance
 resource "aws_instance" "my-test-instance2" {
@@ -38,15 +29,6 @@ resource "aws_instance" "my-test-instance2" {
     user = "Rohan"
     env  = "Stage"
   }
-
-  provisioner "local-exec" {
-    command = "echo [worker] >> ./stage_hosts"
-  }
-  provisioner "local-exec" {
-    command = "echo ${aws_instance.my-test-instance2.public_ip} >> ./stage_hosts"
-  }
-
-
 }
 # security group
 resource "aws_security_group" "allow-ssh" {
@@ -129,6 +111,18 @@ resource "aws_route_table" "main-public" {
 resource "aws_route_table_association" "main-public-1-a" {
   subnet_id      = aws_subnet.main-public-1.id
   route_table_id = aws_route_table.main-public.id
+  provisioner "local-exec" {
+  command = "echo [master] >> ./stage_hosts"
+  }
+  provisioner "local-exec" {
+    command = "echo ${aws_instance.my-test-instance.public_ip} >> ./stage_hosts"
+  }
+  provisioner "local-exec" {
+  command = "echo [worker] >> ./stage_hosts"
+  }
+  provisioner "local-exec" {
+    command = "echo ${aws_instance.my-test-instance2.public_ip} >> ./stage_hosts"
+  }
   provisioner "local-exec" {
     command = "sleep 120; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu --private-key ./Mumbai.pem -i ./stage_hosts ./dependencies.yml"
   }
