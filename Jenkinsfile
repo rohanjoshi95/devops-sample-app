@@ -37,7 +37,7 @@ node {
             sh '''
             cd /var/lib/jenkins/workspace/Product/kube-cluster/
             sudo chmod 400 Mumbai.pem
-            sleep 60; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu --private-key ./Mumbai.pem -i ./stage_hosts ./deployment.yml
+            sleep 120; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu --private-key ./Mumbai.pem -i ./stage_hosts ./deployment.yml
             '''
         }
         stage ('Approval For Production Deployment')  {
@@ -49,7 +49,7 @@ node {
           stage('Deployment on Production Environment'){
             sh '''
             cd /var/lib/jenkins/workspace/Product/prod_infra/
-            sleep 60; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu --private-key /var/lib/jenkins/workspace/Product/kube-cluster/Mumbai.pem -i ./prod_hosts ./deployment.yml
+            sleep 120; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu --private-key /var/lib/jenkins/workspace/Product/kube-cluster/Mumbai.pem -i ./prod_hosts ./deployment.yml
             '''
         }
     }
