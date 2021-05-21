@@ -1,0 +1,15 @@
+{
+        "family": "ecs-task",
+        "containerDefinitions": [{
+                "image": "%REPOSITORY_URI%:%LATEST_DOCKER_IMAGE%",
+                "name": "ecs-task",
+                "cpu": 500,
+                "memory": 800,
+                "essential": true,
+                "portMappings": [{
+                        "containerPort": 8081,
+                        "hostPort": 8081  
+                }]
+
+        }]
+}

@@ -1,0 +1,27 @@
+- hosts: master
+  become: yes
+  gather_facts: false
+  tasks:   
+   - name: Copying application kubernetes deployment yml file
+     copy: src=app_main.yml dest=app_main.yml
+
+   - name: Deploy Application
+     become_user: ubuntu
+     shell: kubectl apply -f app_main.yml
+     register: deployed
+
+   - name: Result of Deployment
+     debug:
+       msg: "Result----->> {{ deployed }}"
+       
+   - name: Copying monitoring deployment yml file
+     copy: src=/var/lib/jenkins/workspace/Product/monitoring/ dest=/home/ubuntu/
+     
+   - name: Monitoring with Prometheus and Grafana
+     become_user: ubuntu
+     shell: |
+       cd kubernetes-prometheus/
+       kubectl apply -f .
+       cd ..
+       cd kubernetes-grafana/
+       kubectl apply -f .

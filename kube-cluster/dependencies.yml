@@ -1,0 +1,134 @@
+- hosts: master,worker
+  become: yes
+  tasks:
+   - name: install APT Transport HTTPS
+     apt:
+       name: apt-transport-https
+       state: present
+
+   - name: install Docker
+     apt:
+       name: docker.io
+       state: present
+       update_cache: true
+
+   - name: Add ubuntu user and Restart docker
+     shell: |
+        usermod -aG docker ubuntu
+        systemctl restart docker
+        systemctl enable docker.service
+
+   - name: add Kubernetes apt-key
+     apt_key:
+       url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+       state: present
+
+   - name: add Kubernetes' APT repository
+     apt_repository:
+       repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+       state: present
+       filename: 'kubernetes'
+
+   - name: install kubelet
+     apt:
+       name: kubelet
+       state: present
+       update_cache: true
+
+   - name: install kubeadm
+     apt:
+       name: kubeadm
+       state: present
+
+   - name: install kubectl
+     apt:
+       name: kubectl
+       state: present
+
+   - name: install kubernetes-cni
+     apt:
+       name: kubernetes-cni
+       state: present
+
+   - name: Turn Off Swap Space
+     shell: |
+        swapoff -a
+        sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
+
+   - name: Enable and start kubelet service
+     shell: |
+        systemctl daemon-reload
+        systemctl start kubelet
+        systemctl enable kubelet.service
+
+   - name: install unzip
+     apt:
+       pkg: unzip
+       state: present
+
+- hosts: master
+  become: yes
+  gather_facts: false
+  tasks:
+   - name: Resetting kubeadm
+     shell: kubeadm reset -f
+     register: output
+     
+   - name: Initializing Kubernetes cluster
+     shell: kubeadm init --ignore-preflight-errors=NumCPU
+     register: output
+
+   - name: Storing Logs and Generated token for future purpose.
+     local_action: copy content={{ output.stdout }} dest=join_token
+     become: False
+
+   - name: create .kube directory
+     become: yes
+     become_user: ubuntu
+     file:
+       path: $HOME/.kube
+       state: directory
+       mode: 0755
+
+   - name: copy admin.conf to user's kube config
+     copy:
+       src: /etc/kubernetes/admin.conf
+       dest: /home/ubuntu/.kube/config
+       remote_src: yes
+       owner: ubuntu
+
+   - name: install Pod network
+     become: yes
+     become_user: ubuntu
+     shell: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')" >> pod_network_setup.txt
+     args:
+       chdir: $HOME
+       creates: pod_network_setup.txt
+
+- hosts: worker
+  become: yes
+  gather_facts: false
+  tasks:
+   - name: Copying token to worker nodes
+     copy: src=join_token dest=join_token
+
+   - name: Joining worker nodes with kubernetes master
+     shell: |
+       kubeadm reset -f
+       cat join_token | tail -2 > out.sh
+       sh out.sh
+
+   - name: create .kube directory
+     become: yes
+     become_user: ubuntu
+     file:
+       path: $HOME/.kube
+       state: directory
+       mode: 0755
+
+   - name: copy kubelet.conf to user's kube config
+     copy:
+       src: /etc/kubernetes/kubelet.conf
+       dest: /home/ubuntu/.kube/config
+       remote_src: yes
+       owner: ubuntu

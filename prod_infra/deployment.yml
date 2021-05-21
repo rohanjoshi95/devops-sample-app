@@ -1,0 +1,15 @@
+- hosts: master
+  become: yes
+  gather_facts: false
+  tasks:   
+   - name: Copying application kubernetes deployment yml file
+     copy: src=app_main_prod.yml dest=app_main_prod.yml
+
+   - name: Deploy Application
+     become_user: ubuntu
+     shell: kubectl apply -f app_main_prod.yml
+     register: deployed
+
+   - name: Result of Deployment
+     debug:
+       msg: "Result----->> {{ deployed }}"
