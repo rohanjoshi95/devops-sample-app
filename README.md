@@ -1,6 +1,7 @@
 # DevOps Project
 
 This project covers most of the DevOps techs and tools to deploy multi environment app on AWS infrastructure.
+
 Tools Covered:
   1. Jenkins
   2. AWS EC2
