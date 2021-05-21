@@ -1,16 +1,5 @@
-*#
-*.iml
-*.ipr
-*.iws
-*.jar
-*.sw?
-*~
-.#*
-.*.md.html
-.DS_Store
+
 .classpath
-.factorypath
-.gradle
 .idea
 .metadata
 .project
@@ -21,7 +10,6 @@
 /code
 MANIFEST.MF
 _site/
-activemq-data
 bin
 build
 build.log
@@ -37,5 +25,4 @@ logs
 transaction-logs
 .flattened-pom.xml
 secrets.yml
-.gradletasknamecache
 .sts4-cache
