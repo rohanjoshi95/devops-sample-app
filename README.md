@@ -1,4 +1,4 @@
-# DevOps Project
+# DevOps Sample App
 
 This project covers most of the DevOps techs and tools to deploy multi environment app on AWS infrastructure.
 
