@@ -1,7 +1,7 @@
 node {
     withEnv(['terraform=/usr/local/bin/terraform']){
        stage('SCM Checkout') { 
-            checkout([$class: 'GitSCM', branches: [[name: '*/stage']],
+            checkout([$class: 'GitSCM', branches: [[name: '*/master']],
             userRemoteConfigs: [[credentialsId: 'db49e728-bf73-4961-bb8f-a34924f760b2', 
             url: 'https://github.com/rohanjoshi95/Product.git']]])
        }
